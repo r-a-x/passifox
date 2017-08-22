@@ -21,6 +21,7 @@
 	"options_page": "options/options.html",
 	"background": {
 		"scripts": [
+			"background/mauth.js",
 			"background/aes.js",
 			"background/cryptoHelpers.js",
 			"background/utf8.js",

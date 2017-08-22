@@ -2,7 +2,9 @@
 var _called = {};
 
 chrome.extension.onMessage.addListener(function(req, sender, callback) {
+	console.log("This is the addListener being caleld");
 	if ('action' in req) {
+		console.log("This is the message listener being called");
 		if(req.action == "fill_user_pass_with_specific_login") {
 			if(cip.credentials[req.id]) {
 				var combination = null;

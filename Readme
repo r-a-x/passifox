@@ -1,0 +1,22 @@
+For testing association, I will have to check if the last generater QR code is
+available and it is receiving the repsonse from the backend server
+
+Testing Connectivity
+-------------------
+1) If QRUid is NULL, in that case I have to return false
+2) For MVP, making a call to the backend for the connection,
+
+To be added checks
+--> The encryption, decryption is working fine, by generating a hello - world message
+
+
+Internal Working
+---------------
+
+How the data will be received, does encryption etc will be taken care of ?
+All the data will be long polling request by chrome extension,
+
+
+MVP Features
+------------
+1) ---> No encryption, its a long process in itself

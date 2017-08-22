@@ -113,7 +113,10 @@ event.onSaveSettings = function(callback, tab, settings) {
 }
 
 event.onGetStatus = function(callback, tab) {
-	keepass.testAssociation(tab);
+	console.log("The request for the Get Status called");
+
+	mauth.testAssociation(tab);
+	// keepass.testAssociation(tab);
 
 	var configured = keepass.isConfigured();
 	var keyId = null;
