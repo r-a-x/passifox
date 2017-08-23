@@ -1,3 +1,4 @@
+//import mauth from './mauth.js';
 var event = {};
 
 
@@ -113,9 +114,10 @@ event.onSaveSettings = function(callback, tab, settings) {
 }
 
 event.onGetStatus = function(callback, tab) {
-	console.log("The request for the Get Status called");
 
+	console.log("The request for the Get Status called :- ");
 	mauth.testAssociation(tab);
+	console.log("The end of request for the Get status called :- ");
 	// keepass.testAssociation(tab);
 
 	var configured = keepass.isConfigured();
