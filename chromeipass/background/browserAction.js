@@ -4,6 +4,12 @@ var BLINK_TIMEOUT_DEFAULT = 7500;
 var BLINK_TIMEOUT_REDIRECT_THRESHOLD_TIME_DEFAULT = -1;
 var BLINK_TIMEOUT_REDIRECT_COUNT_DEFAULT = 1;
 
+browserAction.display  = function (callback,tab){
+	// It will have the code for the genration of the
+	chrome.
+	return ;
+}
+
 browserAction.show = function(callback, tab) {
 	var data = {};
 	if(!page.tabs[tab.id] || page.tabs[tab.id].stack.length == 0) {
@@ -70,9 +76,15 @@ browserAction.showDefault = function(callback, tab) {
 		iconType: "normal",
 		popup: "popup.html"
 	}
-	if(!keepass.isConfigured() || keepass.isDatabaseClosed || !keepass.isKeePassHttpAvailable || page.tabs[tab.id].errorMessage) {
+
+	var isConnected = mauth.isConnected(uid);
+	console.log("The status of the isConnected is: "+ isConnected);
+	if ( !isConnected ){
 		stackData.iconType = "cross";
 	}
+	// if(!keepass.isConfigured() || keepass.isDatabaseClosed || !keepass.isKeePassHttpAvailable || page.tabs[tab.id].errorMessage) {
+	// 	stackData.iconType = "cross";
+	// }
 
     if(page.tabs[tab.id].loginList.length > 0) {
         stackData.iconType = "questionmark";
@@ -258,7 +270,6 @@ browserAction.generateIconName = function(iconType, icon) {
 	}
 
 	var name = "icon_";
-	name += (keepass.keePassHttpUpdateAvailable()) ? "new_" : "";
 	name += (!iconType || iconType == "normal") ? "normal_" : iconType + "_";
 	name += keepass.getIconColor();
 	name += "_19x19.png";

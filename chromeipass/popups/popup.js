@@ -1,4 +1,5 @@
 function status_response(r) {
+
 	$('#initial-state').hide();
 	$('#error-encountered').hide();
 	$('#need-reconfigure').hide();
@@ -6,32 +7,27 @@ function status_response(r) {
 	$('#configured-and-associated').hide();
 	$('#configured-not-associated').hide();
 
+	// console.log(r.error);
+	console.log(r);
+	// identifier:qr.uid,
+	// isMauthMobileAvailable:mauth.isMauthMobileAvailable,
+	// isMauthServerAvailable:mauth.isMauthServerAvailable,
+	// associated: connected,
+	// error
 
-	if(!r.keePassHttpAvailable || r.databaseClosed) {
-		$('#error-message').html(r.error);
-		$('#error-encountered').show();
-	}
-	else if(!r.configured) {
-		$('#not-configured').show();
-	}
-	else if(r.encryptionKeyUnrecognized) {
-		$('#need-reconfigure').show();
-		$('#need-reconfigure-message').html(r.error);
-	}
-	else if(!r.associated) {
-		//$('#configured-not-associated').show();
-		//$('#unassociated-identifier').html(r.identifier);
-		$('#need-reconfigure').show();
-		$('#need-reconfigure-message').html(r.error);
-	}
-	else if(typeof(r.error) != "undefined") {
-		$('#error-encountered').show();
-		$('#error-message').html(r.error);
-	}
-	else {
-		$('#configured-and-associated').show();
-		$('#associated-identifier').html(r.identifier);
-	}
+if ( r.isMauthMobileAvailable && r.isMauthServerAvailable){
+	console.log("Both are connected");
+	$('#reload-status-button').text("Reconnect");
+}
+else if ( !r.isMauthServerAvailable ){
+	$('error-encountered').show();
+	$('error-message').html("No Internet Connection");
+}
+else if ( !r.isMauthMobileAvailable){
+	$('error-encountered').show();
+	$('error-message').html(r.error);
+}
+
 }
 
 $(function() {
@@ -48,6 +44,9 @@ $(function() {
 		});
 		close();
 	});
+
+// This is the method, that will run initially and this will provide
+// me with the data regarding the user is connected or not
 
 	$("#reload-status-button").click(function() {
 		chrome.extension.sendMessage({
@@ -67,6 +66,7 @@ $(function() {
 		});
 	});
 
+// The function responsible for the checking of init functionalty
 	chrome.extension.sendMessage({
 		action: "get_status"
 	}, status_response);

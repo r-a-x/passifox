@@ -394,45 +394,6 @@ keepass.setCurrentKeePassHttpVersion = function(version) {
 	}
 }
 
-keepass.keePassHttpUpdateAvailable = function() {
-	if(page.settings.checkUpdateKeePassHttp && page.settings.checkUpdateKeePassHttp > 0) {
-		var lastChecked = (keepass.latestKeePassHttp.lastChecked) ? new Date(keepass.latestKeePassHttp.lastChecked) : new Date("11/21/1986");
-		var daysSinceLastCheck = Math.floor(((new Date()).getTime()-lastChecked.getTime())/86400000);
-		if(daysSinceLastCheck >= page.settings.checkUpdateKeePassHttp) {
-			keepass.checkForNewKeePassHttpVersion();
-		}
-	}
-
-	return (keepass.currentKeePassHttp.versionParsed > 0 && keepass.currentKeePassHttp.versionParsed < keepass.latestKeePassHttp.versionParsed);
-}
-
-keepass.checkForNewKeePassHttpVersion = function() {
-	var xhr = new XMLHttpRequest();
-	xhr.open("GET", keepass.latestVersionUrl, false);
-	xhr.setRequestHeader("Content-Type", "application/json");
-	try {
-		xhr.send();
-		var $version = xhr.responseText;
-		if($version.substring(0, 1) == ":") {
-			$version = $version.substring(xhr.responseText.indexOf("KeePassHttp") + 12);
-			$version = $version.substring(0, $version.indexOf(":") - 1);
-			keepass.latestKeePassHttp.version = $version;
-			keepass.latestKeePassHttp.versionParsed = parseInt($version.replace(/\./g,""));
-		}
-		else {
-			$version = -1;
-		}
-	}
-	catch (e) {
-		console.log("Error: " + e);
-	}
-
-	if($version != -1) {
-		localStorage.latestKeePassHttp = JSON.stringify(keepass.latestKeePassHttp);
-	}
-	keepass.latestKeePassHttp.lastChecked = new Date();
-}
-
 keepass.testAssociation = function (tab, triggerUnlock) {
 	keepass.getDatabaseHash(tab, triggerUnlock);
 

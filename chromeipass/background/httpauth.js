@@ -60,6 +60,8 @@ httpAuth.loginOrShowCredentials = function(logins) {
 	}
 	// no logins found
 	else {
+		console.log("The call for the creds is made, but found none");
 		httpAuth.callback({});
 	}
 }
+//

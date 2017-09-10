@@ -1,11 +1,23 @@
 // since version 2.0 the extension is using a keyRing instead of a single key-name-pair
-keepass.convertKeyToKeyRing();
+// keepass.convertKeyToKeyRing();
 // load settings
 page.initSettings();
+sjcl.random.startCollectors();
+
+var x = sjcl.random.randomWords(4);
+var encoded = sjcl.codec.base64.fromBits(x);
+
+// encoded random bits
+
+// This encoding can be used to data over the wire etc
+console.log( encoded );
 // create tab information structure for every opened tab
 page.initOpenedTabs();
+
+
 // initial connection with KeePassHttp
-keepass.getDatabaseHash(null);
+// keepass.getDatabaseHash(null);
+
 // set initial tab-ID
 chrome.tabs.query({"active": true, "windowId": chrome.windows.WINDOW_ID_CURRENT}, function(tabs) {
 	if (tabs.length === 0)
@@ -23,9 +35,11 @@ var _interval = 250;
  */
 chrome.tabs.onCreated.addListener(function(tab) {
 	if(tab.id > 0) {
-		//console.log("chrome.tabs.onCreated(" + tab.id+ ")");
+		console.log("chrome.tabs.onCreated(" + tab.id+ ")");
+		console.log("Need to check the last time, when the data was acccesed");
 		if(tab.selected) {
 			page.currentTabId = tab.id;
+			console.log("what is this switchTab");
 			event.invoke(page.switchTab, null, tab.id, []);
 		}
 	}

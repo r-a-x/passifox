@@ -51,8 +51,10 @@ page.isValidProtocol = function(url) {
 }
 
 page.switchTab = function(callback, tab) {
+	console.log("In the switch tab method");
 	browserAction.showDefault(null, tab);
 
+// This sends the event to content script, if it wants to make certain changes to it
 	chrome.tabs.sendMessage(tab.id, {action: "activated_tab"});
 }
 

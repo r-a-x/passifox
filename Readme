@@ -16,7 +16,41 @@ Internal Working
 How the data will be received, does encryption etc will be taken care of ?
 All the data will be long polling request by chrome extension,
 
+Check how the android phone, will be connecting to the backend ?
+
 
 MVP Features
 ------------
-1) ---> No encryption, its a long process in itself
+1) Work on features connecting extension to backend
+ a) how it should connect to the backend, and when it should connect
+
+
+2) If its connected
+  ----> Check for the url in the database
+      ----> url Present : backend returns them
+      ----> url not there, it asks for generated password, and sends them to the backend
+3) If its not connected
+  ---> I am going to implement this feature now,
+  ---> It will generate the QR code
+  ---> It will show the QR code in the popuup
+  ---> The phone will scans the QR code, and try to make a request again
+
+  Techincalities
+  --------------
+    ---> After QR code being generated, extension has to register
+    ---> to the backend for that uid
+    ---> extension will make a request to the backend saying register me on the endpoint
+    ---> Spring-boot will add an entry corresponding to that uid,
+    ---> Spring boot will wait for 3 seconds for the response in the database
+        ---> If there is no data in the databse for 3 seconds, it will send the response
+        ---> unable to reach the phone, and the browser will make a request again after
+        ---> spring boot will again wait for 3 second for the request.
+        ---> finally the extension will stop makaing the request after total wait time of 6 seconds,
+        after that the extension will show the button of reload.
+
+  ---> Logic to be implemented in backend, spring makes an entry in the redis saying
+  uid ---> browser
+  uid ---> mobile
+
+  After receiving request from the browser, it will check for the entry in the redis
+  about the particular field, and it will see if there is an entry, it will return conncted

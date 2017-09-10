@@ -27,12 +27,3 @@ function initSettings() {
 		close();
 	});
 }
-
-
-$(function() {
-	initSettings();
-
-	chrome.extension.sendMessage({
-		action: "update_available_keepasshttp"
-	}, updateAvailableResponse);
-});

@@ -21,12 +21,16 @@
 	"options_page": "options/options.html",
 	"background": {
 		"scripts": [
-			"background/jquery-1.11.1.min.js",
+
 			"background/aes.js",
+			"background/sjcl.js",
+			"background/qrcode.js",
 			"background/cryptoHelpers.js",
 			"background/utf8.js",
 			"background/keepass.js",
 			"background/mauth.js",
+			"background/qr.js",
+			"background/network.js",
 			"background/httpauth.js",
 			"background/browserAction.js",
 			"background/page.js",

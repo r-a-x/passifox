@@ -1,4 +1,3 @@
-//import mauth from './mauth.js';
 var event = {};
 
 
@@ -14,7 +13,7 @@ event.onMessage = function(request, sender, callback) {
 		event.invoke(event.messageHandlers[request.action], callback, sender.tab.id, request.args);
 
 		// onMessage closes channel for callback automatically
-		// if this method does not return true
+		// if this method `does not return true
 		if(callback) {
 			return true;
 		}
@@ -46,9 +45,9 @@ event.invoke = function(handler, callback, senderTabId, args, secondTime) {
 
 	chrome.tabs.get(senderTabId, function(tab) {
 	//chrome.tabs.query({"active": true, "windowId": chrome.windows.WINDOW_ID_CURRENT}, function(tabs) {
-		//if (tabs.length === 0)
-		//	return; // For example: only the background devtools or a popup are opened
-		//var tab = tabs[0];
+		// if (tabs.length === 0)
+		// 	return; // For example: only the background devtools or a popup are opened
+		// var tab = tabs[0];
 
 		if(!tab) {
 			return;
@@ -81,8 +80,8 @@ event.invoke = function(handler, callback, senderTabId, args, secondTime) {
 			console.log("undefined handler for tab " + tab.id);
 		}
 	});
-}
 
+}
 
 event.onShowAlert = function(callback, tab, message) {
 	if( page.settings.supressAlerts ){ console.log(message); }
@@ -115,26 +114,13 @@ event.onSaveSettings = function(callback, tab, settings) {
 
 event.onGetStatus = function(callback, tab) {
 
-	console.log("The request for the Get Status called :- ");
-	mauth.testAssociation(tab);
-	console.log("The end of request for the Get status called :- ");
-	// keepass.testAssociation(tab);
-
-	var configured = keepass.isConfigured();
-	var keyId = null;
-	if (configured) {
-		keyId = keepass.keyRing[keepass.databaseHash].id;
-	}
-
+	var connected =	mauth.testAssociation(tab);
 	browserAction.showDefault(null, tab);
-
 	callback({
-		identifier: keyId,
-		configured: configured,
-		databaseClosed: keepass.isDatabaseClosed,
-		keePassHttpAvailable: keepass.isKeePassHttpAvailable,
-		encryptionKeyUnrecognized: keepass.isEncryptionKeyUnrecognized,
-		associated: keepass.isAssociated(),
+		identifier:qr.uid,
+		isMauthMobileAvailable:mauth.isMauthMobileAvailable,
+		isMauthServerAvailable:mauth.isMauthServerAvailable,
+		associated:connected,
 		error: page.tabs[tab.id].errorMessage
 	});
 }
@@ -169,9 +155,6 @@ event.onCheckUpdateKeePassHttp = function(callback, tab) {
 	callback({"current": keepass.currentKeePassHttp.version, "latest": keepass.latestKeePassHttp.version});
 }
 
-event.onUpdateAvailableKeePassHttp = function(callback, tab) {
-	callback(keepass.keePassHttpUpdateAvailable());
-}
 
 event.onRemoveCredentialsFromTabInformation = function(callback, tab) {
 	var id = tab.id || page.currentTabId;
@@ -225,7 +208,7 @@ event.onMultipleFieldsPopup = function(callback, tab) {
 event.messageHandlers = {
 	'add_credentials': keepass.addCredentials,
 	'alert': event.onShowAlert,
-	'associate': keepass.associate,
+	'associate': mauth.associate,
 	'check_update_keepasshttp': event.onCheckUpdateKeePassHttp,
 	'get_connected_database': event.onGetConnectedDatabase,
 	'get_keepasshttp_versions': event.onGetKeePassHttpVersions,
@@ -238,13 +221,12 @@ event.messageHandlers = {
 	'popup_login': event.onLoginPopup,
 	'popup_multiple-fields': event.onMultipleFieldsPopup,
 	'remove_credentials_from_tab_information': event.onRemoveCredentialsFromTabInformation,
-	'retrieve_credentials': keepass.retrieveCredentials,
+	'retrieve_credentials': mauth.retrieveCredentials,
 	'show_default_browseraction': browserAction.showDefault,
 	'update_credentials': keepass.updateCredentials,
 	'save_settings': event.onSaveSettings,
 	'set_remember_credentials': event.onSetRememberPopup,
 	'stack_add': browserAction.stackAdd,
-	'update_available_keepasshttp': event.onUpdateAvailableKeePassHttp,
 	'generate_password': keepass.generatePassword,
 	'copy_password': keepass.copyPassword
 };
