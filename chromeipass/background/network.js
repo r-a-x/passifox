@@ -13,7 +13,8 @@ network.successHandler = function(data,status,xhr){
 
 network.sendSync = function(url,data,successHandler,errorHandler){
   errorHandler = errorHandler || network.errorHandler;
-  return httpRequest(url,data,successHandler,errorHandler,false);
+  // return httpRequest(url,data,successHandler,errorHandler,false);
+  return http(url,data);
 }
 
 network.sendPollSync = function(url,data,successHandler)
@@ -22,7 +23,7 @@ network.sendPollSync = function(url,data,successHandler)
           url: url,
           contentType:"application/json",
           type: "POST",
-          timeout:5000,
+          // timeout:5000,
           data: JSON.stringify(data),
           success: successHandler,
           error: function (data,status,xhr) {
@@ -30,6 +31,22 @@ network.sendPollSync = function(url,data,successHandler)
                 network.sendPollSync(url,data,successHandler);
           }
         });
+}
+
+function http(url ,request) {
+	var xhr = new XMLHttpRequest();
+	xhr.open("POST", url, false);
+	xhr.setRequestHeader("Content-Type", "application/json");
+	try {
+		var r = JSON.stringify(request);
+		page.debug("Request: {1}", r);
+		xhr.send(r);
+	}
+	catch (e) {
+		console.log("Mauth: " + e);
+	}
+	page.debug("Response: {1} => {2}", xhr.status, xhr.responseText);
+	return [xhr.status, xhr.responseText];
 }
 
 function httpRequest(url,data,successHandler,errorHandler,isAsync){
@@ -43,6 +60,7 @@ function httpRequest(url,data,successHandler,errorHandler,isAsync){
       // error : errorHandler
     }
   ).responseText;
+  console.log("The resonse from the Response Tetx is " + responseText );
   return JSON.parse(responseText);
 }
 

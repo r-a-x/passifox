@@ -5,7 +5,6 @@ mauth.lastSync = null;
 mauth.lastMakeConnectionCallTimeStamp = null;
 mauth.lastMakeConnectionCallStatus = false;
 mauth.qrUid=null;
-mauth.isMauthHttpAvailable = false;
 mauth.isEncryptionKeyUnrecognized = false;
 mauth.currentMauthHttp = {"version": 0, "versionParsed": 0};
 mauth.latestMauthHttp = (typeof(localStorage.latestmauthHttp) == 'undefined') ? {"version": 0, "versionParsed": 0, "lastChecked": null} : JSON.parse(localStorage.latestmauthHttp);
@@ -108,7 +107,13 @@ mauth.associate = function(callback, tab) {
 
 // TODO This has to be modified, later on to accomodate the testing of the mobile connectivity
 mauth.testAssociation = function (tab, triggerUnlock) {
+  mauth.isMauthServerAvailable=false;
+  mauth.isMauthMobileAvailable=false;
+
   if ( mauth.isConnected( qr.uid ) ){
+    console.log("The call to the connect is made");
+    mauth.isMauthServerAvailable=true;
+    mauth.isMauthMobileAvailable=true;
     return true;
   }
   page.tabs[tab.id].errorMessage = "Unable to connect to the Internet. Please check you are online";
