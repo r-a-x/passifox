@@ -20,12 +20,12 @@ if ( r.isMauthMobileAvailable && r.isMauthServerAvailable){
 	$('#reload-status-button').text("Reconnect");
 }
 else if ( !r.isMauthServerAvailable ){
-	$('error-encountered').show();
-	$('error-message').html("No Internet Connection");
+	$('#error-encountered').show();
+	$('#error-message').html("No Internet Connection");
 }
 else if ( !r.isMauthMobileAvailable){
-	$('error-encountered').show();
-	$('error-message').html(r.error);
+	$('#error-encountered').show();
+	$('#error-message').html(r.error);
 }
 
 }
