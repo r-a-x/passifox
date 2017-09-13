@@ -2,14 +2,14 @@ var $ = cIPJQ.noConflict(true);
 var _settings = typeof(localStorage.settings)=='undefined' ? {} : JSON.parse(localStorage.settings);
 //var global = chrome.extension.getBackgroundPage();
 
-function updateAvailableResponse(available) {
-	if(available) {
-		$("#update-available").show();
-	}
-	else {
-		$("#update-available").hide();
-	}
-}
+// function updateAvailableResponse(available) {
+// 	if(available) {
+// 		$("#update-available").show();
+// 	}
+// 	else {
+// 		$("#update-available").hide();
+// 	}
+// }
 
 function initSettings() {
 	$("#settings #btn-options").click(function() {

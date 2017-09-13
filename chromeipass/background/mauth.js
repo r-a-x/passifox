@@ -14,8 +14,11 @@ mauth.latestVersionUrl = "https://passifox.appspot.com/kph/latest-version.txt";
 mauth.cacheTimeout = 30 * 1000; // milliseconds
 mauth.keyId = "chromeipass-cryptokey-name";
 mauth.keyBody = "chromeipass-key";
-mauth.isMauthMobileAvailable = false;
-mauth.isMauthServerAvailable = false;
+mauth.isMobileAvailable = false;
+mauth.mobileLastCall = new Date("October 13, 2014 11:13:00");
+mauth.serverLastCall = new Date("October 13, 2014 11:13:00");
+mauth.isServerAvailable = false;
+mauth.waitingTimeIntervalInSeconds = 4;
 mauth.to_s = cryptoHelpers.convertByteArrayToString;
 mauth.to_b = cryptoHelpers.convertStringToByteArray;
 
@@ -31,12 +34,34 @@ mauth.isConnected = function(uid){
 }
 
 mauth.connectUrl = mauth.pluginUrlDefault + "/connect";
-mauth.connect = function(uid){
+mauth.connect = function(tab){
   var connection = {
-    "uid":uid,
+    "uid":qr.uid,
     "msg":"connect"
   };
-  return network.sendPollSync(url,connection);
+  // based on the response, I can find out if the backend is working and if the mobile is having
+  // some issue in it
+  mauth.isMobileAvailable = false;
+  mauth.isServerAvailable = false;
+  var response = network.sendPollSync(url,connection);
+  var status = response[0];
+  if ( status == 404 ){
+    page.tabs[tab.id].errorMessage = "Unable to Connect to Internet";
+    mauth.isMobileAvailable = false;
+    mauth.isServerAvailable = false;
+  }
+  else if ( status != 200) {
+    page.tabs[tab.id].errorMessage = "Please make sure the phone is unlocked and connected to internet";
+    mauth.isMobileAvailable = false;
+    mauth.isServerAvailable = true;
+  }
+  else if ( status == 200){
+    page.tabs[tab.id].errorMessage = "Chrome is connected to the mobile phone !!";
+    mauth.isMobileAvailable = true;
+    mauth.isServerAvailable = true;
+    mauth.mobileName = resonse[1];
+  }
+  return status == 200;
 }
 
 mauth.getCredentials = mauth.pluginUrlDefault + "/getcreds";
@@ -57,7 +82,7 @@ mauth.getAvailableCreds = function ( uid ){
 }
 
 mauth.isAssociated = function(){
-  return mauth.isMauthMobileAvailable && mauth.isMauthServerAvailable;
+  return mauth.isMobileAvailable && mauth.isServerAvailable;
 }
 
 mauth.associate = function(callback, tab) {
@@ -65,59 +90,78 @@ mauth.associate = function(callback, tab) {
 	if(mauth.isAssociated()) {
 		return;
 	}
-
 	page.tabs[tab.id].errorMessage = null;
-
   var qr = generateQRCode();
-
-	// var rawKey = cryptoHelpers.generateSharedKey(keepass.keySize * 2);
-	// var key = keepass.b64e(srawKey);
-  //
-	// var request = {
-	// 	RequestType: "associate",
-	// 	Key: key
-	// };
-  //
-	// keepass.setVerifier(request, key);
-  //
-	// var result = keepass.send(request);
-  //
-	// if(keepass.checkStatus(result[0], tab)) {
-	// 	var r = JSON.parse(result[1]);
-  //
-	// 	if(r.Version) {
-	// 		keepass.currentKeePassHttp = {
-	// 			"version": r.Version,
-	// 			"versionParsed": parseInt(r.Version.replace(/\./g,""))
-	// 		};
-	// 	}
-  //
-	// 	var id = r.Id;
-	// 	if(!keepass.verifyResponse(r, key)) {
-	// 		page.tabs[tab.id].errorMessage = "KeePass association failed, try again.";
-	// 	}
-	// 	else {
-	// 		keepass.setCryptoKey(id, key);
-	// 		keepass.associated.value = true;
-	// 		keepass.associated.hash = r.Hash || 0;
-	// 	}
-
 		browserAction.show(callback, tab);
 }
 
-// TODO This has to be modified, later on to accomodate the testing of the mobile connectivity
-mauth.testAssociation = function (tab, triggerUnlock) {
-  mauth.isMauthServerAvailable=false;
-  mauth.isMauthMobileAvailable=false;
 
-  if ( mauth.isConnected( qr.uid ) ){
-    console.log("The call to the connect is made");
-    mauth.isMauthServerAvailable=true;
-    mauth.isMauthMobileAvailable=true;
-    return true;
+function callRequired(){
+
+}
+
+// TODO This has to be modified, later on to accomodate the testing of the mobile connectivity
+
+function checkConnectivityBackendServer(){
+}
+
+function checkConnectivityMobileApp(){
+}
+
+function getTimeInSeconds(current,old){
+  return ( current.getTime() - old.getTime() ) /1000;
+}
+
+mauth.serverPing = function(uid){
+  return true;
+}
+mauth.mobilePing = function(uid){
+  return true;
+}
+
+function testAssociation(tab,uid,lastCall,errorMessage , isAvailable, ping ) {
+
+  var lastCallInSeconds = getTimeInSeconds(new  Date(),lastCall);
+  if (lastCallInSeconds > mauth.waitingTimeIntervalInSeconds){
+      var status = ping(uid);
+      lastCall = new Date();
+      isAvailable = status;
+      if ( status == false)
+        page.tabs[tab.id].errorMessage = errorMessage;
+      return status;
   }
-  page.tabs[tab.id].errorMessage = "Unable to connect to the Internet. Please check you are online";
-  return false;
+    return isAvailable;
+
+}
+
+
+mauth.testAssociation = function (tab, triggerUnlock) {
+
+  console.log("The test Association of called !! Let's see how it goes");
+  page.tabs[tab.id].errorMessage = "Unknown Error in the connection !!";
+
+  if (qr.uid == null ){
+    page.tabs[tab.id].errorMessage = "Please scan the code through phone !!";
+    return false;
+  }
+
+  var serverStatus = testAssociation(tab,
+    qr.uid,
+    mauth.serverLastCall,
+    "Please ensure that you are connected to Internet",
+    mauth.isServerAvailable,
+    mauth.serverPing );
+
+  if ( serverStatus == false )
+    return false ;
+
+  return testAssociation(tab,
+     qr.uid,
+     mauth.mobileLastCall,
+     "Please ensure that phone is connected to Internet",
+     mauth.isMobileAvailable,
+     mauth.mobilePing );
+
 }
 
 
@@ -128,32 +172,13 @@ mauth.retrieveCredentials = function (callback, tab, url, submiturl, forceCallba
 	page.tabs[tab.id].errorMessage = null;
 
 	// is browser associated to keepass?
-	if(!mauth.testAssociation(tab, triggerUnlock)) {
+	if( !mauth.testAssociation(tab, triggerUnlock) ) {
 		browserAction.showDefault(null, tab);
 		if(forceCallback) {
 			callback([]);
 		}
 		return;
 	}
-
-	// // build request
-	// var request = {
-	// 	"RequestType": "get-logins",
-	// 	"SortSelection": "true",
-	// 	"TriggerUnlock": (triggerUnlock === true) ? "true" : "false"
-	// };
-	// var verifier = keepass.setVerifier(request);
-	// var key = verifier[1];
-  // var id = verifier[0];
-	// var iv = request.Nonce;
-	// request.Url = keepass.encrypt(url, key, iv);
-
-	// if(submiturl) {
-	// 	request.SubmitUrl = keepass.encrypt(submiturl, key, iv);
-	// }
-
-	// send request
-  // This can't be encrypted
 
   var request = {
     "uid":qr.uid,
@@ -166,8 +191,6 @@ mauth.retrieveCredentials = function (callback, tab, url, submiturl, forceCallba
 	var response = result[1];
 	var entries = [];
 
-	// verify response
-
 	if(mauth.checkStatus(status, tab)) {
 		var r = JSON.parse(response);
     console.log("The calling of the retrieveCredentials being called ");
@@ -179,39 +202,17 @@ mauth.retrieveCredentials = function (callback, tab, url, submiturl, forceCallba
       console.log("The length of the possible credentials that can be inserted is zerpo");
       browserAction.showDefault(null,tab);
     }
-// The code for the encryption goes here
-		// if (keepass.verifyResponse(r, key, id)) {
-		// 	var rIv = r.Nonce;
-		// 	for (var i = 0; i < r.Entries.length; i++) {
-		// 		keepass.decryptEntry(r.Entries[i], key, rIv);
-		// 	}
-		// 	entries = r.Entries;
-		// 	keepass.updateLastUsed(keepass.databaseHash);
-		// 	if(entries.length == 0) {
-		// 		//questionmark-icon is not triggered, so we have to trigger for the normal symbol
-		// 		browserAction.showDefault(null, tab);
-		// 	}
-		// }
-		// else {
-		// 	console.log("RetrieveCredentials for " + url + " rejected");
-		// }
-
 	}
 	else {
 		browserAction.showDefault(null, tab);
 	}
-
 	page.debug("keepass.retrieveCredentials() => entries.length = {1}", entries.length);
 	callback(entries);
-
 }
-
-
-
 mauth.checkStatus = function (status, tab) {
 	var success = (status >= 200 && status <= 299);
-	mauth.isMauthMobileAvailable = true;
-	mauth.isMauthServerAvailable = true;
+	mauth.isMobileAvailable = true;
+	mauth.isServerAvailable = true;
 
 	if(tab && page.tabs[tab.id]) {
 		delete page.tabs[tab.id].errorMessage;
@@ -244,4 +245,7 @@ mauth.checkStatus = function (status, tab) {
 	page.debug("Mauth.checkStatus({1}, [tabID]) => {2}", status, success);
 
 	return success;
+}
+
+mauth.connect = function ( ){
 }

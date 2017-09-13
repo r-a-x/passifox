@@ -1,5 +1,6 @@
 // The file responsible for handling the network requests etc
 var network={}
+network.timeOut = 1 ;
 
 network.errorHandler = function(data,status,xhr){
   console.log("Oops !! Error connecting to the server");

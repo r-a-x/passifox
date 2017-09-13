@@ -6,52 +6,42 @@ function status_response(r) {
 	$('#not-configured').hide();
 	$('#configured-and-associated').hide();
 	$('#configured-not-associated').hide();
+	$('#connect-button').hide();
 
-	// console.log(r.error);
 	console.log(r);
-	// identifier:qr.uid,
-	// isMauthMobileAvailable:mauth.isMauthMobileAvailable,
-	// isMauthServerAvailable:mauth.isMauthServerAvailable,
-	// associated: connected,
-	// error
+	r.isServerAvailable = true;
+	if ( r.isMobileAvailable && r.isServerAvailable){
+		$('#connected-and-associated').show();
+		$('#associated-identifier').html(r.mobileName);
+		$('#reload-status-button').show();
+		$('#reload-status-button').text("Reconnect");
+	}
+	else if ( !r.associated && r.isServerAvailable){
+		$('#connected-not-associated').show();
+		$('#unassociated-identifier').html(r.identifier);
+		$('#connect-button').show();
+	}
+	else if ( !r.isServerAvailable ){
+		$('#error-encountered').show();
+		$('#error-message').html("No Internet Connection or the Server is down");
+		$('#connect-button').show();
+	}
+	else if ( !r.isMobileAvailable){
+		$('#error-encountered').show();
+		$('#error-message').html(r.error);
+		$('#connect-button').show();
+	}
 
-if ( r.isMauthMobileAvailable && r.isMauthServerAvailable){
-	console.log("Both are connected");
-	$('#reload-status-button').text("Reconnect");
-}
-else if ( !r.isMauthServerAvailable ){
-	$('#error-encountered').show();
-	$('#error-message').html("No Internet Connection");
-}
-else if ( !r.isMauthMobileAvailable){
-	$('#error-encountered').show();
-	$('#error-message').html(r.error);
 }
 
-}
 
-$(function() {
-	$("#connect-button").click(function() {
+	$("#connect-button").click(function(){
 		chrome.extension.sendMessage({
-			action: "associate"
-		});
-		close();
-	});
-
-	$("#reconnect-button").click(function() {
-		chrome.extension.sendMessage({
-			action: "associate"
-		});
-		close();
-	});
-
-// This is the method, that will run initially and this will provide
-// me with the data regarding the user is connected or not
-
-	$("#reload-status-button").click(function() {
-		chrome.extension.sendMessage({
-			action: "get_status"
-		}, status_response);
+			action:"connect",
+		},status_response);
+		chrome.tabs.sendMessage({
+			action:"connect",
+		},status_response);
 	});
 
 	$("#redetect-fields-button").click(function() {
@@ -65,9 +55,9 @@ $(function() {
 			});
 		});
 	});
-
-// The function responsible for the checking of init functionalty
-	chrome.extension.sendMessage({
+	//
+console.log("This is going to check the connection");
+	chrome.extension.sendMessage(
+		{
 		action: "get_status"
 	}, status_response);
-});

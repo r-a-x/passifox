@@ -16,6 +16,7 @@ event.onMessage = function(request, sender, callback) {
 		// if this method `does not return true
 		if(callback) {
 			return true;
+			return true;
 		}
 	}
 }
@@ -118,10 +119,11 @@ event.onGetStatus = function(callback, tab) {
 	browserAction.showDefault(null, tab);
 	callback({
 		identifier:qr.uid,
-		isMauthMobileAvailable:mauth.isMauthMobileAvailable,
-		isMauthServerAvailable:mauth.isMauthServerAvailable,
+		isMobileAvailable:mauth.isMobileAvailable,
+		isServerAvailable:mauth.isServerAvailable,
 		associated:connected,
-		error: page.tabs[tab.id].errorMessage
+		error: page.tabs[tab.id].errorMessage,
+		mobileName:mauth.mobileName
 	});
 }
 
@@ -202,6 +204,19 @@ event.onMultipleFieldsPopup = function(callback, tab) {
 
 	browserAction.show(null, tab);
 }
+// This part is not working
+event.connect = function (callback,tab){
+			var status = mauth.connect(tab);
+			browserAction.showDefault(null, tab);
+			callback({
+				identifier:qr.uid,
+				isMauthMobileAvailable:mauth.isMauthMobileAvailable,
+				isMauthServerAvailable:mauth.isMauthServerAvailable,
+				associated:status,
+				error: page.tabs[tab.id].errorMessage,
+				mobileName:mauth.mobileName
+			});
+}
 
 
 // all methods named in this object have to be declared BEFORE this!
@@ -228,5 +243,6 @@ event.messageHandlers = {
 	'set_remember_credentials': event.onSetRememberPopup,
 	'stack_add': browserAction.stackAdd,
 	'generate_password': keepass.generatePassword,
-	'copy_password': keepass.copyPassword
+	'copy_password': keepass.copyPassword,
+	'connect':event.connect
 };
