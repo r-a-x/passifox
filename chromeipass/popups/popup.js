@@ -33,6 +33,14 @@ function status_response(r) {
 
 }
 
+	$("#reconnect-button").click(function(){
+		console.log("The Reconnect button is pressed");
+		chrome.extension.sendMessage({
+			action:"reconnect",
+			status_response
+		});
+
+	});
 
 	$("#connect-button").click(function(){
 		console.log("The connect button is called");

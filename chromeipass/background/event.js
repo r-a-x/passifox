@@ -203,7 +203,7 @@ event.onMultipleFieldsPopup = function(callback, tab) {
 
 	browserAction.show(null, tab);
 }
-// This part is not working
+
 event.connect = function (callback,tab){
 			var status = mauth.connect(tab);
 			browserAction.showDefault(null, tab);
@@ -217,6 +217,18 @@ event.connect = function (callback,tab){
 			});
 }
 
+event.reconnect = function(callback,tab){
+	generateQRCode();
+	browserAction.showDefault(null,tab);
+	callback({
+		identifier:qr.uid,
+		isMauthMobileAvailable:false,
+		isMauthServerAvailable:true,
+		associated:false,
+		error:"Scan the code again !!",
+		mobileName:null
+	});
+}
 
 // all methods named in this object have to be declared BEFORE this!
 event.messageHandlers = {
@@ -243,5 +255,6 @@ event.messageHandlers = {
 	'stack_add': browserAction.stackAdd,
 	'generate_password': keepass.generatePassword,
 	'copy_password': keepass.copyPassword,
-	'connect':event.connect
+	'connect':event.connect,
+	'reconnect':event.reconnect
 };
