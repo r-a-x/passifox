@@ -24,43 +24,56 @@ mauth.to_b = cryptoHelpers.convertStringToByteArray;
 
 mauth.isConnectedUrl = mauth.pluginUrlDefault + "/isconnected";
 mauth.isConnected = function(uid){
-    var connection = {
-      "uid" :uid ,
-      "msg": "Hello"
-    };
-    var response =  network.sendSync(mauth.isConnectedUrl,connection);
-    return response["msg"] == "Hey";
+
+    return mauth.mobile.available ;
+    // var connection = {
+    //   "uid" :uid ,
+    //   "msg": "Hello"
+    // };
+    // var response =  network.sendSync(mauth.isConnectedUrl,connection);
+    // return response["msg"] == "Hey";
 }
 
 mauth.connectUrl = mauth.pluginUrlDefault + "/connect";
 mauth.connect = function(tab){
+
+  console.log("The connect function is called");
+
   var connection = {
     "uid":qr.uid,
     "msg":"connect"
   };
-  // based on the response, I can find out if the backend is working and if the mobile is having
-  // some issue in it
-  mauth.isMobileAvailable = false;
-  mauth.isServerAvailable = false;
-  var response = network.sendPollSync(url,connection);
+
+
+  var response = network.sendSync(mauth.pluginUrlDefault,connection);
+
+  mauth.server.lastCall = new Date();
+  mauth.mobile.lastCall = new Date();
+
   var status = response[0];
+
   if ( status == 404 ){
+
     page.tabs[tab.id].errorMessage = "Unable to Connect to Internet";
-    mauth.isMobileAvailable = false;
-    mauth.isServerAvailable = false;
+    mauth.mobile.available = false;
+    mauth.server.available = false;
+
   }
   else if ( status != 200) {
+
     page.tabs[tab.id].errorMessage = "Please make sure the phone is unlocked and connected to internet";
-    mauth.isMobileAvailable = false;
-    mauth.isServerAvailable = true;
+    mauth.server.available = true;
+    mauth.mobile.available = false;
+
   }
   else if ( status == 200){
     page.tabs[tab.id].errorMessage = "Chrome is connected to the mobile phone !!";
-    mauth.isMobileAvailable = true;
-    mauth.isServerAvailable = true;
+    mauth.mobile.available = true;
+    mauth.server.available = true;
     mauth.mobileName = resonse[1];
   }
   return status == 200;
+
 }
 
 mauth.getCredentials = mauth.pluginUrlDefault + "/getcreds";
@@ -240,7 +253,4 @@ mauth.checkStatus = function (status, tab) {
 	page.debug("Mauth.checkStatus({1}, [tabID]) => {2}", status, success);
 
 	return success;
-}
-
-mauth.connect = function ( ){
 }

@@ -209,8 +209,8 @@ event.connect = function (callback,tab){
 			browserAction.showDefault(null, tab);
 			callback({
 				identifier:qr.uid,
-				isMauthMobileAvailable:mauth.isMauthMobileAvailable,
-				isMauthServerAvailable:mauth.isMauthServerAvailable,
+				isMauthMobileAvailable:mauth.mobile.available,
+				isMauthServerAvailable:mauth.server.available,
 				associated:status,
 				error: page.tabs[tab.id].errorMessage,
 				mobileName:mauth.mobileName

@@ -35,10 +35,8 @@ function status_response(r) {
 
 
 	$("#connect-button").click(function(){
+		console.log("The connect button is called");
 		chrome.extension.sendMessage({
-			action:"connect",
-		},status_response);
-		chrome.tabs.sendMessage({
 			action:"connect",
 		},status_response);
 	});
@@ -58,3 +56,8 @@ function status_response(r) {
 	chrome.extension.sendMessage(
 		{action: "get_status"}, status_response
 	);
+
+
+	// chrome.extension.sendMessage({
+	// 	action:"connect",
+	// },status_response);
