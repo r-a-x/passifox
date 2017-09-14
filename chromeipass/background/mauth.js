@@ -106,19 +106,7 @@ mauth.associate = function(callback, tab) {
   var qr = generateQRCode();
 		browserAction.show(callback, tab);
 }
-
-
-function callRequired(){
-
-}
-
 // TODO This has to be modified, later on to accomodate the testing of the mobile connectivity
-
-function checkConnectivityBackendServer(){
-}
-
-function checkConnectivityMobileApp(){
-}
 
 function getTimeInSeconds(current,old){
   return ( current.getTime() - old.getTime() ) /1000;
