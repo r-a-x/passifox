@@ -12,8 +12,7 @@ function status_response(r) {
 	if ( r.isMobileAvailable && r.isServerAvailable){
 		$('#connected-and-associated').show();
 		$('#associated-identifier').html(r.mobileName);
-		$('#reload-status-button').show();
-		$('#reload-status-button').text("Reconnect");
+		$('#reconnect-button').show();
 	}
 	else if ( !r.associated && r.isServerAvailable){
 		$('#connected-not-associated').show();
@@ -56,6 +55,5 @@ function status_response(r) {
 	});
 
 	chrome.extension.sendMessage(
-		{
-		action: "get_status"
-	}, status_response);
+		{action: "get_status"}, status_response
+	);
