@@ -115,7 +115,7 @@ mauth.server.ping = function(uid){
   return true;
 }
 mauth.mobile.ping = function(uid){
-  return true;
+  return false;
 }
 
 function testAssociation(tab,uid,device,errorMessage) {

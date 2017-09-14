@@ -114,8 +114,7 @@ event.onSaveSettings = function(callback, tab, settings) {
 }
 
 event.onGetStatus = function(callback, tab) {
-
-	var connected =	mauth.testAssociation(tab);
+ 	var connected =	mauth.testAssociation(tab);
 	browserAction.showDefault(null, tab);
 	callback({
 		identifier:qr.uid,

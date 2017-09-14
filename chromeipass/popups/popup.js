@@ -7,6 +7,7 @@ function status_response(r) {
 	$('#configured-and-associated').hide();
 	$('#configured-not-associated').hide();
 	$('#connect-button').hide();
+	$('#reconnect-button').hide();
 
 	console.log(r);
 	if ( r.isMobileAvailable && r.isServerAvailable){
