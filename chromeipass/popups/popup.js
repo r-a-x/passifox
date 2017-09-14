@@ -9,7 +9,6 @@ function status_response(r) {
 	$('#connect-button').hide();
 
 	console.log(r);
-	r.isServerAvailable = true;
 	if ( r.isMobileAvailable && r.isServerAvailable){
 		$('#connected-and-associated').show();
 		$('#associated-identifier').html(r.mobileName);
@@ -55,8 +54,7 @@ function status_response(r) {
 			});
 		});
 	});
-	//
-console.log("This is going to check the connection");
+
 	chrome.extension.sendMessage(
 		{
 		action: "get_status"

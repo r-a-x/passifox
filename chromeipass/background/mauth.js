@@ -1,5 +1,6 @@
 mauth={}
 
+
 mauth.associated = {"value": false, "hash": null};
 mauth.lastSync = null;
 mauth.lastMakeConnectionCallTimeStamp = null;
@@ -14,10 +15,8 @@ mauth.latestVersionUrl = "https://passifox.appspot.com/kph/latest-version.txt";
 mauth.cacheTimeout = 30 * 1000; // milliseconds
 mauth.keyId = "chromeipass-cryptokey-name";
 mauth.keyBody = "chromeipass-key";
-mauth.isMobileAvailable = false;
-mauth.mobileLastCall = new Date("October 13, 2014 11:13:00");
-mauth.serverLastCall = new Date("October 13, 2014 11:13:00");
-mauth.isServerAvailable = false;
+mauth.mobile = {  "available": false, "lastCall" : new Date("October 13, 2014 11:13:00") };
+mauth.server = { "available":false , "lastCall" : new Date("October 13, 2014 11:13:00") };
 mauth.waitingTimeIntervalInSeconds = 4;
 mauth.to_s = cryptoHelpers.convertByteArrayToString;
 mauth.to_b = cryptoHelpers.convertStringToByteArray;
@@ -112,25 +111,25 @@ function getTimeInSeconds(current,old){
   return ( current.getTime() - old.getTime() ) /1000;
 }
 
-mauth.serverPing = function(uid){
+mauth.server.ping = function(uid){
   return true;
 }
-mauth.mobilePing = function(uid){
-  return true;
+mauth.mobile.ping = function(uid){
+  return false;
 }
 
-function testAssociation(tab,uid,lastCall,errorMessage , isAvailable, ping ) {
+function testAssociation(tab,uid,device,errorMessage) {
 
-  var lastCallInSeconds = getTimeInSeconds(new  Date(),lastCall);
+  var lastCallInSeconds = getTimeInSeconds(new  Date(),mauth[device].lastCall);
   if (lastCallInSeconds > mauth.waitingTimeIntervalInSeconds){
-      var status = ping(uid);
-      lastCall = new Date();
-      isAvailable = status;
+      var status = mauth[device].ping(uid);
+      mauth[device].lastCall = new Date();
+      mauth[device].available = status;
       if ( status == false)
         page.tabs[tab.id].errorMessage = errorMessage;
       return status;
   }
-    return isAvailable;
+    return mauth[device].available;
 
 }
 
@@ -147,20 +146,16 @@ mauth.testAssociation = function (tab, triggerUnlock) {
 
   var serverStatus = testAssociation(tab,
     qr.uid,
-    mauth.serverLastCall,
-    "Please ensure that you are connected to Internet",
-    mauth.isServerAvailable,
-    mauth.serverPing );
+    "server",
+    "Please ensure that you are connected to Internet");
 
   if ( serverStatus == false )
     return false ;
 
   return testAssociation(tab,
      qr.uid,
-     mauth.mobileLastCall,
-     "Please ensure that phone is connected to Internet",
-     mauth.isMobileAvailable,
-     mauth.mobilePing );
+     "mobile",
+     "Please ensure that phone is connected to Internet");
 
 }
 

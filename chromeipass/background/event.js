@@ -119,11 +119,11 @@ event.onGetStatus = function(callback, tab) {
 	browserAction.showDefault(null, tab);
 	callback({
 		identifier:qr.uid,
-		isMobileAvailable:mauth.isMobileAvailable,
-		isServerAvailable:mauth.isServerAvailable,
+		isMobileAvailable:mauth.mobile.available,
+		isServerAvailable:mauth.server.available,
 		associated:connected,
 		error: page.tabs[tab.id].errorMessage,
-		mobileName:mauth.mobileName
+		mobileName:mauth.mobile.name
 	});
 }
 
