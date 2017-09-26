@@ -36,18 +36,23 @@ function status_response(r) {
 	$("#reconnect-button").click(function(){
 		console.log("The Reconnect button is pressed");
 		chrome.extension.sendMessage({
-			action:"reconnect",
+			action:"",
 			status_response
 		});
 
 	});
 
-	$("#connect-button").click(function(){
-		console.log("The connect button is called");
-		chrome.extension.sendMessage({
-			action:"connect",
-		},status_response);
-	});
+	$(document).ready(function(){
+		$("#connect-button").click(function(){
+			chrome.tabs.query({"active": true, "windowId": chrome.windows.WINDOW_ID_CURRENT}, function(tabs) {
+			console.log("The connect button is called");
+			chrome.extension.sendMessage({
+					action:"connect",
+				},status_response);
+			}
+		);
+		});
+	})
 
 	$("#redetect-fields-button").click(function() {
 		chrome.tabs.query({"active": true, "windowId": chrome.windows.WINDOW_ID_CURRENT}, function(tabs) {
@@ -65,7 +70,25 @@ function status_response(r) {
 		{action: "get_status"}, status_response
 	);
 
-
+// Server Side events
+//
+// var source = new EventSource("http://localhost:8080/connect",{"uid":"432432ewdfsfsd","deviceType":"mobile","fromDeviceType":"curl"});
+// source.onMessage = function(event){
+// 	console.log(event.data)
+// }
 	// chrome.extension.sendMessage({
 	// 	action:"connect",
 	// },status_response);
+async function test() {
+	const NUM_RETRIES = 3;
+	  let i;
+	  for (i = 0; i < NUM_RETRIES; ++i) {
+	    try {
+	      consol.log("Doing stupid stuff");
+	      break;
+	    } catch(err) {}
+	  }
+	  console.log(i); // 3
+	}
+
+test();

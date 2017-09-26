@@ -70,15 +70,11 @@ browserAction.update = function(interval) {
 	}
 }
 
-browserAction.showDefault = function(callback, tab) {
-	var stackData = {
-		level: 1,
-		iconType: "normal",
-		popup: "popup.html"
-	}
+function handlerShowDefault (callback,args,status,responseText){
+	var isConnected = false ;
 
-	var isConnected = mauth.isConnected(uid);
 	console.log("The status of the isConnected is: "+ isConnected);
+
 	if ( !isConnected ){
 		stackData.iconType = "cross";
 	}
@@ -94,6 +90,16 @@ browserAction.showDefault = function(callback, tab) {
 	browserAction.stackUnshift(stackData, tab.id);
 
 	browserAction.show(null, tab);
+}
+
+browserAction.showDefault = function(callback, tab) {
+	var stackData = {
+		level: 1,
+		iconType: "normal",
+		popup: "popup.html"
+	}
+
+	var isConnected = mauth.isConnected(handlerShowDefault,callback,uid);
 }
 
 browserAction.stackAdd = function(callback, tab, icon, popup, level, push, visibleForMilliSeconds, visibleForPageUpdates, redirectOffset,  dontShow) {

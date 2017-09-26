@@ -1,6 +1,5 @@
 mauth={}
 
-
 mauth.associated = {"value": false, "hash": null};
 mauth.lastSync = null;
 mauth.lastMakeConnectionCallTimeStamp = null;
@@ -21,58 +20,161 @@ mauth.waitingTimeIntervalInSeconds = 4;
 mauth.to_s = cryptoHelpers.convertByteArrayToString;
 mauth.to_b = cryptoHelpers.convertStringToByteArray;
 
+function updateStatus(mAlive,sAlive,mLastCall,sLastCall){
+  mauth.mobile.available = mAlive;
+  mauth.server.available = sAlive;
+  mauth.mobile.lastCall = mLastCall || mauth.mobile.lastCall;
+  mauth.server.lastCall = sLastCall || mauth.server.lastCall;
+}
 
 mauth.isConnectedUrl = mauth.pluginUrlDefault + "/isconnected";
-mauth.isConnected = function(uid){
+function handlerIsConnectedCallback(callback,tab,status,responseText){
 
-    return mauth.mobile.available ;
-    // var connection = {
-    //   "uid" :uid ,
-    //   "msg": "Hello"
-    // };
-    // var response =  network.sendSync(mauth.isConnectedUrl,connection);
-    // return response["msg"] == "Hey";
+  console.log("The call returned from handlerIsConnectedCallback",callback,tab,status,responseText);
+  if (status == 404){
+    page.tabs[tab.id].errorMessage  = error.ServerNotReachable;
+    updateStatus(false,false,new Date(),new Date());
+      callback({
+        identifier:qr.uid,
+        isMobileAvailable:false,
+        isServerAvailable : false,
+        associated : false,
+        error : page.tabs[tab.id].errorMessage});
+      return ;
+  }
+
+  console.log ( "The value of the tabs is",tab);
+  if ( status == 200) {
+    if ( !responseText["deviceAlive"]){
+
+      // page.tabs[tab.id].errorMessage = error.MobileNotConnected;
+      page.tabs[tab.id].errorMessage ="Unable to Connect to mobile";
+    }
+      updateStatus(true,true,responseText["lastTimeDeviceSync"],new Date());
+      callback({
+        identifier:qr.uid,
+        isMobileAvailable: responseText["deviceAlive"],
+        isServerAvailable : true,
+        associated :false,
+        error : page.tabs[tab.id].errorMessage
+      });
+      return;
+  }
+
+  page.tabs[tab.id].errorMessage = error.UnknownErrorInConnection;
+  updateStatus(false,false,null,null);
+  callback({
+    identifier:qr.uid,
+    isMobileAvailable:false,
+    isServerAvailable:false,
+    associated:false,
+    error:page.tabs[tab.id].errorMessage
+  });
+
+return ;
+
+}
+
+mauth.isConnected = function(callback,tab,uid){
+
+    var CheckConnectionRequest = {
+      "uid" :uid,
+      "deviceType" : "browser",
+      "ping" :  "mobile"
+    };
+
+    if ( qr.uid == uid)
+      if(  getTimeInSeconds(new Date(), mauth.server.lastCall) < mauth.waitingTimeIntervalInSeconds  )
+        return mauth.isAssociated();
+
+    network.sendAsync(handlerIsConnectedCallback,callback,tab,mauth.isConnectedUrl,CheckConnectionRequest);
+}
+
+mauth.testAssociationAsync = function ( callback, tab, triggerUnlock) {
+
+  console.log("The test Association of called !! Let's see how it goes");
+  page.tabs[tab.id].errorMessage = error.UnknownErrorInConnection;
+  if (qr.uid == null ){
+
+    page.tabs[tab.id].errorMessage = error.QrCodeNotPresent;
+    updateStatus(false,false,null,null);
+    callback({
+      identifier:qr.uid,
+      isMobileAvailable:false,
+      isServerAvailable:false,
+      associated:false,
+      error:page.tabs[tab.id].errorMessage
+    });
+    return ;
+  }
+  mauth.isConnected(callback,tab,qr.uid);
+}
+
+
+function handlerConnect(callback,tab,status,responseText){
+
+
+// Fix the working of the return etc for this method
+
+  if ( status == 404 ){
+    page.tabs[tab.id].errorMessage = error.ServerNotReachable;
+    updateStatus(false,false,new Date(),new Date());
+  }
+  else if ( status != 200) {
+    page.tabs[tab.id].errorMessage = error.UnknownErrorInConnection;
+    updateStatus(false,true,new Date(),new Date());
+  }
+  else if ( status == 200){
+
+    // Uid string `json:"uid"`
+    // DeviceType string `json:"deviceType"`
+    // UserName string `json:"userName"`
+    // MobileAlive bool `json"mobileAlive"`
+    // BrowserAlive bool	`json":browserAlive"`
+    // LastTimeBrowserSync time.Time `json:"lastTimeBrowserSync"`
+    // LastTimeMobileSync	time.Time `json:lastTimeMobileSync`
+    // ForcedConnect bool `json:forcedConnect"`
+
+    if ( responseText["mobileAlive"]){
+      updateStatus(true,true,responseText["lastTimeMobileSync"],new date());
+      page.tabs[tab.id].errorMessage = error.ConnectionEstablished;
+    }
+    else{
+      page.tabs[tab.id].errorMessage = error.MobileNotConnected;
+      updateStatus(false,true,null,new Date());
+    }
+  }
+
+  callback({
+    identifier:qr.uid,
+    isMauthMobileAvailable:mauth.mobile.available,
+    isMauthServerAvailable:mauth.server.available,
+    associated: mauth.isAssociated(),
+    error: page.tabs[tab.id].errorMessage,
+    mobileName:mauth.mobileName
+  });
+
 }
 
 mauth.connectUrl = mauth.pluginUrlDefault + "/connect";
-mauth.connect = function(tab){
+mauth.connect = function(callback,tab){
 
   console.log("The connect function is called");
 
-  var connection = {
+  var createConnectionRequest = {
     "uid":qr.uid,
-    "msg":"connect"
+    "deviceType":"browser",
+    "connectTo":"mobile",
+    "forceConnect":false,
   };
 
 
-  var response = network.sendSync(mauth.pluginUrlDefault,connection);
-
-  mauth.server.lastCall = new Date();
-  mauth.mobile.lastCall = new Date();
-
-  var status = response[0];
-
-  if ( status == 404 ){
-
-    page.tabs[tab.id].errorMessage = "Unable to Connect to Internet";
-    mauth.mobile.available = false;
-    mauth.server.available = false;
-
-  }
-  else if ( status != 200) {
-
-    page.tabs[tab.id].errorMessage = "Please make sure the phone is unlocked and connected to internet";
-    mauth.server.available = true;
-    mauth.mobile.available = false;
-
-  }
-  else if ( status == 200){
-    page.tabs[tab.id].errorMessage = "Chrome is connected to the mobile phone !!";
-    mauth.mobile.available = true;
-    mauth.server.available = true;
-    mauth.mobileName = resonse[1];
-  }
-  return status == 200;
+  network.sendAsync(handlerConnect,
+    callback,
+    tab,
+    mauth.pluginUrlDefault,
+    createConnectionRequest
+  );
 
 }
 
@@ -104,7 +206,8 @@ mauth.associate = function(callback, tab) {
 	}
 	page.tabs[tab.id].errorMessage = null;
   var qr = generateQRCode();
-		browserAction.show(callback, tab);
+	browserAction.show(callback, tab);
+
 }
 // TODO This has to be modified, later on to accomodate the testing of the mobile connectivity
 
@@ -112,10 +215,19 @@ function getTimeInSeconds(current,old){
   return ( current.getTime() - old.getTime() ) /1000;
 }
 
-mauth.server.ping = function(uid){
+function handlerServerPing(callback){
+    callback();
+}
+mauth.server.ping = function(callback,uid){
   return true;
 }
-mauth.mobile.ping = function(uid){
+
+function handlerMobilePing(callback){
+    callback();
+}
+
+mauth.mobile.ping = function(callback,uid){
+  network.sendAsync(handlerMobilePing,uid);
   return false;
 }
 
@@ -149,11 +261,10 @@ mauth.testAssociation = function (tab, triggerUnlock) {
     qr.uid,
     "server",
     "Please ensure that you are connected to Internet");
-
   if ( serverStatus == false )
-    return false ;
+    return false;
 
-  return testAssociation(tab,
+    return testAssociation(tab,
      qr.uid,
      "mobile",
      "Please ensure that phone is connected to Internet");

@@ -21,6 +21,7 @@
 	"options_page": "options/options.html",
 	"background": {
 		"scripts": [
+			"background/error.js",
 			"background/aes.js",
 			"background/sjcl.js",
 			"background/qrcode.js",
@@ -86,6 +87,7 @@
 		"https://*/*",
 		"http://*/*",
 		"http://localhost:19455/",
+		"http://localhost:8080/",
 		"http://localhost/",
 		"https://raw.github.com/"
 	]
