@@ -113,9 +113,8 @@ event.onSaveSettings = function(callback, tab, settings) {
 	event.onLoadSettings();
 }
 
-event.onGetStatus = function(callback, tab) {
- 	var connected =	mauth.testAssociation(tab);
-	browserAction.showDefault(null, tab);
+function getStatusHelper(callback,status){
+	browserAction.showDefault(null,tab,status);
 	callback({
 		identifier:qr.uid,
 		isMobileAvailable:mauth.mobile.available,
@@ -124,6 +123,16 @@ event.onGetStatus = function(callback, tab) {
 		error: page.tabs[tab.id].errorMessage,
 		mobileName:mauth.mobile.name
 	});
+}
+
+event.onGetStatus = function(callback, tab) {
+
+	mauth.testAssociationPromise(tab,qr.uid).then( function (){
+		getStatusHelper(callback,true);
+	}, function(){
+		getStatusHelper(callback,false);
+	});
+
 }
 
 event.onPopStack = function(callback, tab) {
@@ -205,7 +214,7 @@ event.onMultipleFieldsPopup = function(callback, tab) {
 }
 
 event.connect = function (callback,tab){
-			var status = mauth.connect(tab);
+			var status = mauth.connect(callback,tab);
 			browserAction.showDefault(null, tab);
 			callback({
 				identifier:qr.uid,

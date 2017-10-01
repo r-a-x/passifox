@@ -15,6 +15,7 @@ network.successHandler = function(data,status,xhr){
 network.sendSync = function(url,data,successHandler,errorHandler){
   errorHandler = errorHandler || network.errorHandler;
   // return httpRequest(url,data,successHandler,errorHandler,false);
+  data = JSON.stringify(data);
   return http(url,data);
 }
 

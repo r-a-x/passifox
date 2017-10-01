@@ -70,14 +70,14 @@ browserAction.update = function(interval) {
 	}
 }
 
-browserAction.showDefault = function(callback, tab) {
+browserAction.showDefault = function(callback, tab ,isConnected) {
 	var stackData = {
 		level: 1,
 		iconType: "normal",
 		popup: "popup.html"
 	}
 
-	var isConnected = mauth.isConnected(uid);
+	isConnected =  isConnected|| mauth.isConnected(uid);
 	console.log("The status of the isConnected is: "+ isConnected);
 	if ( !isConnected ){
 		stackData.iconType = "cross";
